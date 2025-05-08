@@ -1,10 +1,8 @@
-version: '3.9'
-
 services:
   odoo:
-    container_name: ${ODOO_CONTAINER_NAME:-odoo-dev-app-17}
+    container_name: ${ODOO_CONTAINER_NAME:-odoo_app}
     image: ${ODOO_IMAGE:-odoo}:${ODOO_VERSION:-17.0}
-    restart: ${ODOO_RESTART_POLICY:-unless-stopped}
+    restart: ${RESTART_POLICY:-unless-stopped}
     environment:
       - HOST=postgres
       - USER=${POSTGRES_USER:-odoo}
@@ -12,6 +10,7 @@ services:
       - DB_NAME=${POSTGRES_DB:-postgres}
       - INSTALL_MODULES=${ODOO_INSTALL_MODULES:-base}
       - ODOO_INIT_DB=${ODOO_INIT_DB:-True}
+      - TZ=${TIMEZONE:-Asia/Bangkok}
     command: ${ODOO_COMMAND:---init=${ODOO_INSTALL_MODULES:-base} --database=${POSTGRES_DB:-postgres}}
     ports:
       - "${ODOO_PORT:-8069}:8069"
@@ -24,29 +23,30 @@ services:
       - postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
-      interval: ${ODOO_HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${ODOO_HEALTHCHECK_TIMEOUT:-10s}
-      retries: ${ODOO_HEALTHCHECK_RETRIES:-3}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${HEALTHCHECK_RETRIES:-3}
       start_period: ${ODOO_HEALTHCHECK_START_PERIOD:-60s}
 
   postgres:
-    container_name: ${POSTGRES_CONTAINER_NAME:-odoo-dev-postgres-15}
+    container_name: ${POSTGRES_CONTAINER_NAME:-odoo_db}
     image: ${POSTGRES_IMAGE:-postgres}:${POSTGRES_VERSION:-15}
-    restart: ${POSTGRES_RESTART_POLICY:-unless-stopped}
+    restart: ${RESTART_POLICY:-unless-stopped}
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-odoo}
       - POSTGRES_USER=${POSTGRES_USER:-odoo}
       - PGDATA=/var/lib/postgresql/data/pgdata
+      - TZ=${TIMEZONE:-Asia/Bangkok}
     volumes:
       - postgres_data:/var/lib/postgresql/data/pgdata
     networks:
       - default
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo}"]
-      interval: ${POSTGRES_HEALTHCHECK_INTERVAL:-10s}
-      timeout: ${POSTGRES_HEALTHCHECK_TIMEOUT:-5s}
-      retries: ${POSTGRES_HEALTHCHECK_RETRIES:-5}
+      interval: ${HEALTHCHECK_INTERVAL:-10s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-5s}
+      retries: ${HEALTHCHECK_RETRIES:-5}
 
 networks:
   default:
