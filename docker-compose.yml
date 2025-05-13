@@ -1,62 +1,61 @@
 services:
   odoo:
-    container_name: ${ODOO_CONTAINER_NAME:-odoo_app}
-    image: ${ODOO_IMAGE:-odoo}:${ODOO_VERSION:-17.0}
-    restart: ${RESTART_POLICY:-unless-stopped}
+    container_name: ${ODOO_CONTAINER_NAME}
+    image: ${ODOO_IMAGE}:${ODOO_VERSION}
+    restart: ${RESTART_POLICY}
     environment:
       - HOST=postgres
-      - USER=${POSTGRES_USER:-odoo}
-      - PASSWORD=${POSTGRES_PASSWORD:-odoo}
-      - DB_NAME=${POSTGRES_DB:-postgres}
-      - INSTALL_MODULES=${ODOO_INSTALL_MODULES:-base}
-      - ODOO_INIT_DB=${ODOO_INIT_DB:-True}
-      - TZ=${TIMEZONE:-Asia/Bangkok}
-    command: ${ODOO_COMMAND:---init=${ODOO_INSTALL_MODULES:-base} --database=${POSTGRES_DB:-postgres}}
+      - USER=${POSTGRES_USER}
+      - PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - INSTALL_MODULES=${ODOO_INSTALL_MODULES}
+      - ODOO_INIT_DB=${ODOO_INIT_DB}
+      - TZ=${TIMEZONE}
     ports:
-      - "${ODOO_PORT:-8069}:8069"
+      - "${ODOO_PORT}:8069"
     volumes:
       - odoo_data:/var/lib/odoo
-      - ${ODOO_ADDONS_PATH:-./addons}:/mnt/extra-addons
+      - ${ODOO_ADDONS_PATH}:/mnt/extra-addons
     networks:
       - default
     depends_on:
       - postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
-      interval: ${HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
-      retries: ${HEALTHCHECK_RETRIES:-3}
-      start_period: ${ODOO_HEALTHCHECK_START_PERIOD:-60s}
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
+      start_period: ${ODOO_HEALTHCHECK_START_PERIOD}
 
   postgres:
-    container_name: ${POSTGRES_CONTAINER_NAME:-odoo_db}
-    image: ${POSTGRES_IMAGE:-postgres}:${POSTGRES_VERSION:-15}
-    restart: ${RESTART_POLICY:-unless-stopped}
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    image: ${POSTGRES_IMAGE}:${POSTGRES_VERSION}
+    restart: ${RESTART_POLICY}
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-odoo}
-      - POSTGRES_USER=${POSTGRES_USER:-odoo}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - TZ=${TIMEZONE:-Asia/Bangkok}
+      - TZ=${TIMEZONE}
     volumes:
       - postgres_data:/var/lib/postgresql/data/pgdata
     networks:
       - default
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo}"]
-      interval: ${HEALTHCHECK_INTERVAL:-10s}
-      timeout: ${HEALTHCHECK_TIMEOUT:-5s}
-      retries: ${HEALTHCHECK_RETRIES:-5}
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
 
 networks:
   default:
-    name: odoo_network
+    name: ${ODOO_CONTAINER_NAME}_network
     driver: bridge
 
 volumes:
   odoo_data:
-    name: odoo_data
+    name: ${ODOO_CONTAINER_NAME}_data
     driver: local
   postgres_data:
-    name: postgres_data
+    name: ${POSTGRES_CONTAINER_NAME}_data
     driver: local
